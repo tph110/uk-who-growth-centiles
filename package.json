@@ -6,7 +6,7 @@
   "type": "module",
   "license": "AGPL-3.0-or-later",
   "scripts": {
-    "test": "node test/validate.mjs",
+    "test": "node test/validate.mjs && node test/coverage.mjs",
     "dev": "npx --yes serve@14 -l 3000 ."
   }
 }

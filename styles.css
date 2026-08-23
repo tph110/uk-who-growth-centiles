@@ -498,3 +498,22 @@ button.small { padding: 6px 12px; min-height: 34px; font-size: 0.86rem; }
   color: var(--text-muted);
   font-style: italic;
 }
+
+.note-fallback { margin-top: 14px; }
+
+.note-fallback p {
+  margin: 0 0 8px;
+  font-size: 0.85rem;
+  color: var(--text-muted);
+}
+
+.note-fallback textarea {
+  width: 100%;
+  font: 0.85rem/1.5 ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+  color: var(--text);
+  background: var(--surface-2);
+  border: 1px solid var(--border-strong);
+  border-radius: 8px;
+  padding: 10px 12px;
+  resize: vertical;
+}

@@ -83,6 +83,16 @@ function readForm() {
   };
 }
 
+/**
+ * SDS with an explicit sign. A value that rounds to zero gets no sign, so a
+ * measurement sitting on the median reads "0.00" rather than "-0.00".
+ */
+function formatSDS(sds, minus = '\u2212') {
+  const rounded = Number(sds.toFixed(2));
+  if (rounded === 0) return '0.00';
+  return `${rounded > 0 ? '+' : minus}${Math.abs(rounded).toFixed(2)}`;
+}
+
 function formatCentile(centile) {
   if (centile < 0.1) return '<0.1';
   if (centile > 99.9) return '>99.9';
@@ -164,7 +174,7 @@ function renderResultCard(key, entry, calc) {
           <span class="figure-label">centile</span>
         </div>
         <div class="figure">
-          <span class="figure-value">${primary.sds >= 0 ? '+' : '−'}${Math.abs(primary.sds).toFixed(2)}</span>
+          <span class="figure-value">${formatSDS(primary.sds)}</span>
           <span class="figure-label">SDS</span>
         </div>
       </div>
@@ -183,7 +193,7 @@ function renderResultCard(key, entry, calc) {
         // instead of prompting for a units check.
         secText = 'Off the reference without correction for gestation.';
       } else {
-        secText = `${centilePhrase(secondary.centile)} · SDS ${secondary.sds >= 0 ? '+' : '−'}${Math.abs(secondary.sds).toFixed(2)}`;
+        secText = `${centilePhrase(secondary.centile)} · SDS ${formatSDS(secondary.sds)}`;
       }
       body += `<p class="card-secondary"><span>Uncorrected (chronological age)</span> ${secText}</p>`;
     }
@@ -273,9 +283,9 @@ function buildNote(calc) {
       continue;
     }
     const ageType = calc.isCorrected ? 'corrected age' : 'chronological age';
-    lines.push(`${label}: ${entry.observation} ${meta.unit} — ${centilePhrase(primary.centile)}, SDS ${primary.sds >= 0 ? '+' : '-'}${Math.abs(primary.sds).toFixed(2)} (${ageType})`);
+    lines.push(`${label}: ${entry.observation} ${meta.unit} — ${centilePhrase(primary.centile)}, SDS ${formatSDS(primary.sds, '-')} (${ageType})`);
     if (calc.isCorrected && entry.chronological && !entry.chronological.error && !entry.chronological.implausible) {
-      lines.push(`  uncorrected: ${centilePhrase(entry.chronological.centile)}, SDS ${entry.chronological.sds >= 0 ? '+' : '-'}${Math.abs(entry.chronological.sds).toFixed(2)}`);
+      lines.push(`  uncorrected: ${centilePhrase(entry.chronological.centile)}, SDS ${formatSDS(entry.chronological.sds, '-')}`);
     }
   }
 
@@ -331,19 +341,66 @@ rangeTabs.addEventListener('click', (event) => {
   drawChart();
 });
 
+/**
+ * Copies text without depending on the async clipboard API, which browsers
+ * block in plenty of ordinary situations (no secure context, no user-gesture
+ * attribution, permissions policy). Falls back to the legacy path, then to
+ * simply showing the text for manual copying — never to a blocking prompt.
+ */
+async function copyText(text) {
+  try {
+    await navigator.clipboard.writeText(text);
+    return true;
+  } catch {
+    // fall through
+  }
+
+  const area = document.createElement('textarea');
+  area.value = text;
+  area.setAttribute('readonly', '');
+  area.style.position = 'fixed';
+  area.style.opacity = '0';
+  document.body.append(area);
+  area.select();
+  let copied = false;
+  try {
+    copied = document.execCommand('copy');
+  } catch {
+    copied = false;
+  }
+  area.remove();
+  return copied;
+}
+
+function showNoteFallback(text) {
+  let block = document.getElementById('noteFallback');
+  if (!block) {
+    block = document.createElement('div');
+    block.id = 'noteFallback';
+    block.className = 'note-fallback';
+    block.innerHTML = '<p>Copying was blocked by the browser. Select the text below and copy it manually.</p><textarea readonly rows="10"></textarea>';
+    resultCards.after(block);
+  }
+  const area = block.querySelector('textarea');
+  area.value = text;
+  block.hidden = false;
+  area.focus();
+  area.select();
+}
+
 copyBtn.addEventListener('click', async () => {
   if (!state.calculated) return;
   const text = buildNote(state.calculated);
-  try {
-    await navigator.clipboard.writeText(text);
+
+  if (await copyText(text)) {
+    const fallback = document.getElementById('noteFallback');
+    if (fallback) fallback.hidden = true;
     copyBtn.textContent = 'Copied';
-  } catch {
-    // Clipboard access can be blocked; fall back to a selectable prompt.
-    window.prompt('Copy the summary below', text);
-    copyBtn.textContent = 'Copy for notes';
+    setTimeout(() => { copyBtn.textContent = 'Copy for notes'; }, 1800);
     return;
   }
-  setTimeout(() => { copyBtn.textContent = 'Copy for notes'; }, 1800);
+
+  showNoteFallback(text);
 });
 
 window.addEventListener('resize', () => {
