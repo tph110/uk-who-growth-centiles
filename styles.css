@@ -13,6 +13,11 @@
   --accent: #1f5f8b;
   --accent-strong: #17486a;
   --accent-soft: #e8f1f7;
+  --on-accent: #ffffff;
+  --banner: #1f5f8b;
+  --banner-text: #ffffff;
+  --banner-muted: rgb(255 255 255 / 85%);
+  --banner-edge: #17486a;
   --danger: #a6262b;
   --danger-soft: #fdeced;
   --grid: #e7ebf0;
@@ -36,6 +41,12 @@
     --accent: #6fb3dd;
     --accent-strong: #8ec6ea;
     --accent-soft: #1a2c3a;
+    /* --accent is a light blue in dark mode, so text on it must be dark. */
+    --on-accent: #0d1319;
+    --banner: #143243;
+    --banner-text: #eaf3f9;
+    --banner-muted: rgb(234 243 249 / 78%);
+    --banner-edge: #0c2331;
     --danger: #f2919a;
     --danger-soft: #34191c;
     --grid: #232f3a;
@@ -64,8 +75,8 @@ body {
 }
 
 .masthead {
-  background: var(--surface);
-  border-bottom: 1px solid var(--border);
+  background: var(--banner);
+  border-bottom: 1px solid var(--banner-edge);
   padding: 26px 0 22px;
   margin-bottom: 26px;
 }
@@ -74,11 +85,12 @@ body {
   margin: 0;
   font-size: 1.45rem;
   letter-spacing: -0.01em;
+  color: var(--banner-text);
 }
 
 .tagline {
   margin: 6px 0 0;
-  color: var(--text-muted);
+  color: var(--banner-muted);
   font-size: 0.94rem;
 }
 
@@ -202,7 +214,7 @@ button:focus-visible {
 
 .segmented input:checked + span {
   background: var(--accent);
-  color: #fff;
+  color: var(--on-accent);
   font-weight: 600;
 }
 
@@ -230,7 +242,7 @@ button {
 button.primary {
   background: var(--accent);
   border-color: var(--accent);
-  color: #fff;
+  color: var(--on-accent);
   font-weight: 600;
 }
 
@@ -385,7 +397,7 @@ button.small { padding: 6px 12px; min-height: 34px; font-size: 0.86rem; }
 .tab-active {
   background: var(--accent);
   border-color: var(--accent);
-  color: #fff;
+  color: var(--on-accent);
   font-weight: 600;
 }
 
@@ -516,4 +528,179 @@ button.small { padding: 6px 12px; min-height: 34px; font-size: 0.86rem; }
   border-radius: 8px;
   padding: 10px 12px;
   resize: vertical;
+}
+
+/* --- Date field and picker ------------------------------------------------ */
+
+.date-field { position: relative; display: flex; align-items: center; }
+
+.date-field input[type="date"] { padding-right: 44px; }
+
+/* Hide the native calendar icon so there is only one way in. The native popup
+   is browser chrome and cannot be resized from here, which is the whole reason
+   the custom panel below exists. */
+.date-field input[type="date"]::-webkit-calendar-picker-indicator {
+  display: none;
+  -webkit-appearance: none;
+}
+
+.date-trigger {
+  position: absolute;
+  right: 4px;
+  width: 34px;
+  height: 34px;
+  min-height: 34px;
+  padding: 0;
+  display: grid;
+  place-items: center;
+  background: transparent;
+  border: 0;
+  border-radius: 7px;
+  color: var(--text-muted);
+}
+
+.date-trigger:hover { background: var(--surface-2); color: var(--accent); }
+
+.date-trigger svg {
+  width: 19px;
+  height: 19px;
+  fill: none;
+  stroke: currentColor;
+  stroke-width: 1.7;
+  stroke-linecap: round;
+}
+
+.datepicker {
+  position: absolute;
+  z-index: 40;
+  top: calc(100% + 8px);
+  left: 0;
+  width: 340px;
+  max-width: min(340px, calc(100vw - 40px));
+  background: var(--surface);
+  border: 1px solid var(--border-strong);
+  border-radius: 12px;
+  box-shadow: 0 6px 28px rgb(16 24 32 / 18%), 0 2px 6px rgb(16 24 32 / 10%);
+  padding: 12px;
+}
+
+.datepicker.dp-above { top: auto; bottom: calc(100% + 8px); }
+
+.dp-head {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 10px;
+}
+
+.dp-selects { display: flex; gap: 6px; flex: 1; }
+
+.dp-select {
+  font: inherit;
+  font-size: 0.95rem;
+  font-weight: 600;
+  color: var(--text);
+  background: var(--surface-2);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  padding: 7px 8px;
+  flex: 1;
+  min-width: 0;
+  cursor: pointer;
+}
+
+.dp-nav {
+  width: 36px;
+  height: 36px;
+  min-height: 36px;
+  padding: 0;
+  display: grid;
+  place-items: center;
+  background: var(--surface-2);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  color: var(--text);
+  flex: none;
+}
+
+.dp-nav:hover { background: var(--accent-soft); color: var(--accent); border-color: var(--accent); }
+
+.dp-nav svg { width: 18px; height: 18px; fill: none; stroke: currentColor; stroke-width: 2; stroke-linecap: round; stroke-linejoin: round; }
+
+.dp-weekdays,
+.dp-grid {
+  display: grid;
+  grid-template-columns: repeat(7, 1fr);
+  gap: 2px;
+}
+
+.dp-weekdays span {
+  text-align: center;
+  font-size: 0.72rem;
+  font-weight: 650;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  color: var(--text-muted);
+  padding-bottom: 6px;
+}
+
+.dp-day {
+  height: 42px;
+  min-height: 42px;
+  padding: 0;
+  font: inherit;
+  font-size: 0.98rem;
+  font-variant-numeric: tabular-nums;
+  color: var(--text);
+  background: transparent;
+  border: 1px solid transparent;
+  border-radius: 8px;
+}
+
+.dp-day:hover:not(:disabled) { background: var(--accent-soft); }
+
+.dp-empty { visibility: hidden; }
+
+.dp-today { border-color: var(--accent); font-weight: 650; color: var(--accent); }
+
+.dp-selected {
+  background: var(--accent);
+  border-color: var(--accent);
+  color: var(--on-accent);
+  font-weight: 650;
+}
+
+.dp-selected:hover:not(:disabled) { background: var(--accent-strong); }
+
+.dp-day:disabled { color: var(--text-muted); opacity: 0.35; cursor: default; }
+
+.dp-foot {
+  display: flex;
+  justify-content: space-between;
+  gap: 8px;
+  margin-top: 10px;
+  padding-top: 10px;
+  border-top: 1px solid var(--border);
+}
+
+.dp-today-btn,
+.dp-close {
+  font: inherit;
+  font-size: 0.86rem;
+  padding: 7px 14px;
+  min-height: 36px;
+  border-radius: 8px;
+  border: 1px solid var(--border-strong);
+  background: var(--surface);
+  color: var(--text);
+}
+
+.dp-today-btn { border-color: var(--accent); color: var(--accent); font-weight: 600; }
+
+.dp-today-btn:hover { background: var(--accent-soft); }
+
+.dp-close:hover { background: var(--surface-2); }
+
+@media (prefers-color-scheme: dark) {
+  .datepicker { box-shadow: 0 6px 30px rgb(0 0 0 / 55%); }
 }

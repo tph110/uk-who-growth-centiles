@@ -5,6 +5,7 @@ import {
   describeAge, centileBand, centilePhrase, labelForAge, MEASUREMENTS,
 } from './lib/centile.js';
 import { renderChart, defaultRange, RANGES } from './lib/chart.js';
+import { attachDatePicker } from './lib/datepicker.js';
 
 const form = document.getElementById('form');
 const errorBox = document.getElementById('errors');
@@ -24,6 +25,15 @@ const state = {
 
 // Default the measurement date to today; it is by far the commonest case.
 document.getElementById('observationDate').valueAsDate = new Date();
+
+// UK-WHO covers birth to 20 years, so a date of birth never needs to reach
+// further back than that.
+attachDatePicker(document.getElementById('birthDate'), {
+  label: 'date of birth', minYearOffset: -21, maxYearOffset: 0,
+});
+attachDatePicker(document.getElementById('observationDate'), {
+  label: 'date measured', minYearOffset: -21, maxYearOffset: 0,
+});
 
 function parseDateInput(value) {
   if (!value) return null;
