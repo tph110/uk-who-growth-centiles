@@ -1,0 +1,11 @@
+{
+  "version": "0.0.1",
+  "configurations": [
+    {
+      "name": "growth-centiles",
+      "runtimeExecutable": "npx",
+      "runtimeArgs": ["--yes", "serve@14", "-l", "3100", "/Users/tom/Desktop/growth-centiles"],
+      "port": 3100
+    }
+  ]
+}

@@ -1,0 +1,162 @@
+<!doctype html>
+<html lang="en-GB">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>UK-WHO Growth Centile Calculator</title>
+<meta name="description" content="Calculates height, weight and head circumference centiles and SDS for children against the UK-WHO growth reference. All calculation happens in the browser.">
+<link rel="icon" href="favicon.svg">
+<link rel="stylesheet" href="styles.css">
+</head>
+<body>
+<header class="masthead">
+  <div class="wrap">
+    <h1>UK-WHO Growth Centiles</h1>
+    <p class="tagline">Height, weight and head circumference centiles for children from 23 weeks gestation to 20 years.</p>
+  </div>
+</header>
+
+<main class="wrap">
+  <form id="form" novalidate>
+    <section class="panel">
+      <h2>Child</h2>
+      <div class="grid">
+        <div class="field">
+          <span class="label">Sex</span>
+          <div class="segmented" role="radiogroup" aria-label="Sex">
+            <label><input type="radio" name="sex" value="male" required><span>Male</span></label>
+            <label><input type="radio" name="sex" value="female"><span>Female</span></label>
+          </div>
+        </div>
+
+        <div class="field">
+          <label class="label" for="birthDate">Date of birth</label>
+          <input type="date" id="birthDate" name="birthDate" required>
+        </div>
+
+        <div class="field">
+          <label class="label" for="observationDate">Date measured</label>
+          <input type="date" id="observationDate" name="observationDate" required>
+        </div>
+
+        <div class="field">
+          <span class="label">Gestation at birth</span>
+          <div class="gestation">
+            <input type="number" id="gestationWeeks" name="gestationWeeks" min="23" max="44" step="1" value="40" aria-label="Gestation weeks">
+            <span class="plus">+</span>
+            <input type="number" id="gestationDays" name="gestationDays" min="0" max="6" step="1" value="0" aria-label="Gestation days">
+            <span class="unit">weeks</span>
+          </div>
+          <p class="hint">UK-WHO corrects for gestation at every gestation, not only preterm.</p>
+        </div>
+      </div>
+    </section>
+
+    <section class="panel">
+      <h2>Measurements</h2>
+      <p class="hint hint-block">Enter any combination. Blank fields are ignored.</p>
+      <div class="grid grid-3">
+        <div class="field">
+          <label class="label" for="height">Height / length</label>
+          <div class="measure">
+            <input type="number" id="height" name="height" step="0.1" min="0" inputmode="decimal" placeholder="—">
+            <span class="unit">cm</span>
+          </div>
+        </div>
+        <div class="field">
+          <label class="label" for="weight">Weight</label>
+          <div class="measure">
+            <input type="number" id="weight" name="weight" step="0.001" min="0" inputmode="decimal" placeholder="—">
+            <span class="unit">kg</span>
+          </div>
+        </div>
+        <div class="field">
+          <label class="label" for="ofc">Head circumference</label>
+          <div class="measure">
+            <input type="number" id="ofc" name="ofc" step="0.1" min="0" inputmode="decimal" placeholder="—">
+            <span class="unit">cm</span>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <div class="actions">
+      <button type="submit" class="primary">Calculate centiles</button>
+      <button type="reset" class="ghost">Clear</button>
+    </div>
+  </form>
+
+  <div id="errors" class="errors" role="alert" hidden></div>
+
+  <section id="results" class="results" hidden aria-live="polite">
+    <div class="panel">
+      <h2>Age</h2>
+      <div id="ageSummary" class="age-summary"></div>
+    </div>
+
+    <div class="panel">
+      <div class="panel-head">
+        <h2>Results</h2>
+        <button type="button" id="copyBtn" class="ghost small">Copy for notes</button>
+      </div>
+      <div id="resultCards" class="cards"></div>
+    </div>
+
+    <div class="panel">
+      <div class="panel-head">
+        <h2>Chart</h2>
+        <div class="chart-controls">
+          <div id="measureTabs" class="tabs" role="tablist" aria-label="Measurement"></div>
+          <div id="rangeTabs" class="tabs tabs-muted" role="tablist" aria-label="Age range"></div>
+        </div>
+      </div>
+      <div id="chart" class="chart-holder"></div>
+      <p class="chart-key">
+        <span class="key-item"><span class="key-dot"></span> Chronological age</span>
+        <span class="key-item"><span class="key-dot key-dot-open"></span> Corrected for gestation</span>
+        <span class="key-item">Curves: 0.4 · 2 · 9 · 25 · 50 · 75 · 91 · 98 · 99.6</span>
+      </p>
+      <p class="hint">Curves break at 2 weeks, 2 years and 4 years, where UK-WHO switches between the UK90 and WHO 2006 references. The steps are real, not a drawing artefact.</p>
+    </div>
+  </section>
+
+  <section class="panel notes">
+    <h2>About this calculator</h2>
+    <p>
+      Centiles and SDS (z-scores) are calculated by the LMS method against the
+      <strong>UK-WHO growth reference</strong>: UK90 data from 23 weeks gestation to
+      42 weeks, WHO 2006 standards from 2 weeks to 4 years, and UK90 again from
+      4 to 20 years.
+    </p>
+    <p>
+      The implementation is validated against 5,724 reference values from the
+      RCPCH test dataset, which originate from Tim Cole's LMSGrowth. All checks
+      agree within RCPCH's own acceptance tolerance of 1&times;10<sup>&minus;3</sup> SDS
+      (median difference 6&times;10<sup>&minus;5</sup>).
+    </p>
+    <p class="privacy">
+      <strong>Nothing you type leaves this device.</strong> The reference tables are
+      bundled into the page and all calculation runs in your browser. There is no
+      server, no database and no analytics.
+    </p>
+    <p class="disclaimer">
+      This is a calculation aid for use by clinicians alongside clinical judgement.
+      It is not a medical device and should not be the sole basis for a clinical
+      decision. Always check the plotted point against the child's own chart and
+      growth trajectory.
+    </p>
+    <p class="credit">
+      Reference data and calculation method derived from the
+      <a href="https://github.com/rcpch/rcpchgrowth-python" rel="noopener">RCPCH rcpchgrowth-python</a>
+      package (AGPL-3.0). UK90: Cole TJ, Freeman JV, Preece MA. WHO 2006: WHO
+      Multicentre Growth Reference Study Group.
+      This app is licensed <a href="LICENSE" rel="noopener">AGPL-3.0</a> —
+      <!-- AGPL compliance: point this at the public repository once it is pushed. -->
+      <a id="sourceLink" href="https://github.com/tph110/uk-who-growth-centiles" rel="noopener">source code</a>.
+    </p>
+  </section>
+</main>
+
+<script type="module" src="app.js"></script>
+</body>
+</html>

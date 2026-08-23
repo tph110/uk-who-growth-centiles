@@ -1,0 +1,500 @@
+/* UK-WHO Growth Centiles — clinical calculator styles. */
+
+:root {
+  color-scheme: light dark;
+
+  --bg: #f6f7f9;
+  --surface: #ffffff;
+  --surface-2: #f1f3f6;
+  --border: #d9dee5;
+  --border-strong: #c2cad4;
+  --text: #16202b;
+  --text-muted: #5b6875;
+  --accent: #1f5f8b;
+  --accent-strong: #17486a;
+  --accent-soft: #e8f1f7;
+  --danger: #a6262b;
+  --danger-soft: #fdeced;
+  --grid: #e7ebf0;
+  --curve: #9aa8b6;
+  --curve-outer: #7f8d9c;
+  --median: #1f5f8b;
+  --point: #b8232c;
+  --radius: 10px;
+  --shadow: 0 1px 2px rgb(16 24 32 / 6%), 0 4px 14px rgb(16 24 32 / 5%);
+}
+
+@media (prefers-color-scheme: dark) {
+  :root {
+    --bg: #0f151b;
+    --surface: #161e26;
+    --surface-2: #1d2731;
+    --border: #2a3742;
+    --border-strong: #3a4956;
+    --text: #e6ecf2;
+    --text-muted: #9aabb9;
+    --accent: #6fb3dd;
+    --accent-strong: #8ec6ea;
+    --accent-soft: #1a2c3a;
+    --danger: #f2919a;
+    --danger-soft: #34191c;
+    --grid: #232f3a;
+    --curve: #56687a;
+    --curve-outer: #6c7f92;
+    --median: #6fb3dd;
+    --point: #ff6b74;
+    --shadow: 0 1px 2px rgb(0 0 0 / 30%), 0 4px 16px rgb(0 0 0 / 25%);
+  }
+}
+
+* { box-sizing: border-box; }
+
+body {
+  margin: 0;
+  background: var(--bg);
+  color: var(--text);
+  font: 16px/1.55 -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+  -webkit-font-smoothing: antialiased;
+}
+
+.wrap {
+  max-width: 940px;
+  margin: 0 auto;
+  padding: 0 20px;
+}
+
+.masthead {
+  background: var(--surface);
+  border-bottom: 1px solid var(--border);
+  padding: 26px 0 22px;
+  margin-bottom: 26px;
+}
+
+.masthead h1 {
+  margin: 0;
+  font-size: 1.45rem;
+  letter-spacing: -0.01em;
+}
+
+.tagline {
+  margin: 6px 0 0;
+  color: var(--text-muted);
+  font-size: 0.94rem;
+}
+
+.panel {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: 20px 22px 22px;
+  margin-bottom: 18px;
+  box-shadow: var(--shadow);
+}
+
+.panel h2 {
+  margin: 0 0 16px;
+  font-size: 0.8rem;
+  text-transform: uppercase;
+  letter-spacing: 0.07em;
+  color: var(--text-muted);
+  font-weight: 650;
+}
+
+.panel-head {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 16px;
+  flex-wrap: wrap;
+  margin-bottom: 16px;
+}
+
+.panel-head h2 { margin: 0; }
+
+/* --- Form ---------------------------------------------------------------- */
+
+.grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(210px, 1fr));
+  gap: 18px 20px;
+}
+
+.grid-3 { grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); }
+
+.field { display: flex; flex-direction: column; gap: 7px; }
+
+.label {
+  font-size: 0.82rem;
+  font-weight: 600;
+  color: var(--text-muted);
+  letter-spacing: 0.01em;
+}
+
+input[type="date"],
+input[type="number"] {
+  font: inherit;
+  color: var(--text);
+  background: var(--surface);
+  border: 1px solid var(--border-strong);
+  border-radius: 8px;
+  padding: 9px 11px;
+  width: 100%;
+  min-height: 42px;
+}
+
+input:focus-visible,
+button:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: 2px;
+}
+
+.measure, .gestation {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.measure input { flex: 1; }
+
+.gestation input { width: 5.2rem; flex: none; }
+
+.plus { color: var(--text-muted); font-weight: 600; }
+
+.unit {
+  color: var(--text-muted);
+  font-size: 0.9rem;
+  min-width: 2.6rem;
+}
+
+.hint {
+  margin: 2px 0 0;
+  font-size: 0.8rem;
+  color: var(--text-muted);
+  line-height: 1.45;
+}
+
+.hint-block { margin: -6px 0 16px; }
+
+.segmented {
+  display: inline-flex;
+  align-self: flex-start;
+  border: 1px solid var(--border-strong);
+  border-radius: 8px;
+  overflow: hidden;
+  min-height: 42px;
+}
+
+.segmented label { display: flex; }
+
+.segmented input { position: absolute; opacity: 0; pointer-events: none; }
+
+.segmented span {
+  display: flex;
+  align-items: center;
+  padding: 0 20px;
+  cursor: pointer;
+  font-size: 0.94rem;
+  background: var(--surface);
+  border-right: 1px solid var(--border);
+}
+
+.segmented label:last-child span { border-right: 0; }
+
+.segmented input:checked + span {
+  background: var(--accent);
+  color: #fff;
+  font-weight: 600;
+}
+
+.segmented input:focus-visible + span {
+  outline: 2px solid var(--accent);
+  outline-offset: -2px;
+}
+
+.actions {
+  display: flex;
+  gap: 10px;
+  align-items: center;
+  margin: 0 0 20px;
+}
+
+button {
+  font: inherit;
+  cursor: pointer;
+  border-radius: 8px;
+  border: 1px solid transparent;
+  padding: 10px 18px;
+  min-height: 42px;
+}
+
+button.primary {
+  background: var(--accent);
+  border-color: var(--accent);
+  color: #fff;
+  font-weight: 600;
+}
+
+button.primary:hover { background: var(--accent-strong); border-color: var(--accent-strong); }
+
+button.ghost {
+  background: var(--surface);
+  border-color: var(--border-strong);
+  color: var(--text);
+}
+
+button.ghost:hover { background: var(--surface-2); }
+
+button.small { padding: 6px 12px; min-height: 34px; font-size: 0.86rem; }
+
+/* --- Errors -------------------------------------------------------------- */
+
+.errors {
+  background: var(--danger-soft);
+  border: 1px solid var(--danger);
+  color: var(--danger);
+  border-radius: var(--radius);
+  padding: 12px 18px;
+  margin-bottom: 18px;
+}
+
+.errors ul { margin: 0; padding-left: 20px; }
+
+/* --- Age summary --------------------------------------------------------- */
+
+.age-summary dl {
+  margin: 0;
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+  gap: 14px 20px;
+}
+
+.age-summary dt {
+  font-size: 0.78rem;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  color: var(--text-muted);
+  margin-bottom: 3px;
+}
+
+.age-summary dd { margin: 0; font-weight: 550; }
+
+.muted { color: var(--text-muted); font-weight: 400; font-variant-numeric: tabular-nums; }
+
+.tag {
+  display: inline-block;
+  background: var(--accent-soft);
+  color: var(--accent);
+  border-radius: 4px;
+  padding: 1px 7px;
+  font-size: 0.74rem;
+  font-weight: 650;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  vertical-align: 1px;
+}
+
+/* --- Result cards -------------------------------------------------------- */
+
+.cards {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+  gap: 14px;
+}
+
+.card {
+  border: 1px solid var(--border);
+  border-radius: 9px;
+  padding: 14px 16px 16px;
+  background: var(--surface-2);
+}
+
+.card header {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 10px;
+  margin-bottom: 10px;
+}
+
+.card h3 { margin: 0; font-size: 0.9rem; }
+
+.card-value {
+  font-variant-numeric: tabular-nums;
+  color: var(--text-muted);
+  font-size: 0.88rem;
+  white-space: nowrap;
+}
+
+.card-figures { display: flex; gap: 22px; align-items: baseline; }
+
+.figure { display: flex; flex-direction: column; }
+
+.figure-value {
+  font-size: 1.72rem;
+  font-weight: 620;
+  letter-spacing: -0.02em;
+  font-variant-numeric: tabular-nums;
+  line-height: 1.1;
+}
+
+
+.figure-label {
+  font-size: 0.72rem;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  color: var(--text-muted);
+}
+
+.card-band { margin: 12px 0 0; font-size: 0.9rem; }
+
+.card-meta {
+  margin: 8px 0 0;
+  font-size: 0.78rem;
+  color: var(--text-muted);
+}
+
+.card-secondary {
+  margin: 10px 0 0;
+  padding-top: 9px;
+  border-top: 1px dashed var(--border-strong);
+  font-size: 0.82rem;
+  color: var(--text-muted);
+  font-variant-numeric: tabular-nums;
+}
+
+.card-secondary span { display: block; font-size: 0.72rem; text-transform: uppercase; letter-spacing: 0.05em; }
+
+.card-error { margin: 0; color: var(--danger); font-size: 0.88rem; }
+
+/* --- Chart --------------------------------------------------------------- */
+
+.chart-controls { display: flex; gap: 14px; flex-wrap: wrap; }
+
+.tabs { display: inline-flex; gap: 4px; flex-wrap: wrap; }
+
+.tab {
+  background: var(--surface-2);
+  border: 1px solid var(--border);
+  color: var(--text-muted);
+  padding: 5px 12px;
+  min-height: 32px;
+  font-size: 0.84rem;
+  border-radius: 7px;
+}
+
+.tab-active {
+  background: var(--accent);
+  border-color: var(--accent);
+  color: #fff;
+  font-weight: 600;
+}
+
+.tabs-muted .tab-active {
+  background: var(--accent-soft);
+  border-color: var(--accent);
+  color: var(--accent);
+}
+
+.chart-holder { width: 100%; overflow-x: auto; }
+
+.chart { width: 100%; height: auto; display: block; }
+
+.chart-grid line { stroke: var(--grid); stroke-width: 1; }
+
+.chart-axis line { stroke: var(--border-strong); stroke-width: 1; }
+
+.chart-axis .tick {
+  fill: var(--text-muted);
+  font-size: 11px;
+  font-variant-numeric: tabular-nums;
+}
+
+.chart-axis .axis-label {
+  fill: var(--text-muted);
+  font-size: 11.5px;
+  font-weight: 600;
+  letter-spacing: 0.03em;
+}
+
+.curve { fill: none; stroke: var(--curve); stroke-width: 1; }
+
+.curve-outer { stroke: var(--curve-outer); stroke-width: 1.2; }
+
+.curve-median { stroke: var(--median); stroke-width: 1.6; }
+
+.curve-label {
+  fill: var(--text-muted);
+  font-size: 9.5px;
+  font-variant-numeric: tabular-nums;
+}
+
+.point { fill: var(--point); stroke: var(--surface); stroke-width: 1.5; }
+
+.point-open { fill: none; stroke: var(--point); stroke-width: 2.2; }
+
+.chart-empty { color: var(--text-muted); font-size: 0.9rem; }
+
+.chart-key {
+  display: flex;
+  gap: 18px;
+  flex-wrap: wrap;
+  margin: 12px 0 4px;
+  font-size: 0.8rem;
+  color: var(--text-muted);
+}
+
+.key-item { display: inline-flex; align-items: center; gap: 6px; }
+
+.key-dot {
+  width: 10px; height: 10px; border-radius: 50%;
+  background: var(--point);
+}
+
+.key-dot-open { background: none; border: 2px solid var(--point); }
+
+/* --- Notes --------------------------------------------------------------- */
+
+.notes { font-size: 0.9rem; }
+
+.notes p { margin: 0 0 12px; }
+
+.notes a { color: var(--accent); }
+
+.privacy {
+  background: var(--accent-soft);
+  border-left: 3px solid var(--accent);
+  padding: 10px 14px;
+  border-radius: 0 6px 6px 0;
+}
+
+.disclaimer { color: var(--text-muted); }
+
+.credit { color: var(--text-muted); font-size: 0.82rem; margin-bottom: 0; }
+
+/* --- Print --------------------------------------------------------------- */
+
+@media print {
+  :root { --bg: #fff; --surface: #fff; --surface-2: #fff; }
+  .masthead { margin-bottom: 12px; }
+  form, .actions, .chart-controls, #copyBtn, .notes { display: none; }
+  .panel { break-inside: avoid; box-shadow: none; }
+}
+
+@media (max-width: 620px) {
+  /* Scaled to a phone width the chart becomes unreadable, so hold it at a
+     legible size and let the holder scroll horizontally instead. */
+  .chart { min-width: 520px; }
+}
+
+@media (max-width: 560px) {
+  .card-figures { gap: 16px; }
+  .figure-value { font-size: 1.5rem; }
+  .panel { padding: 16px; }
+}
+
+.chart-note {
+  margin: 10px 0 0;
+  font-size: 0.82rem;
+  color: var(--text-muted);
+  font-style: italic;
+}
