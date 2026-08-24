@@ -12,64 +12,30 @@
 <script src="theme-init.js"></script>
 </head>
 <body>
-<header class="masthead">
-  <div class="wrap masthead-grid">
-    <h1 class="brand">
-      <span class="brand-mark" aria-hidden="true">
-        <svg viewBox="0 0 40 40" focusable="false">
-          <defs>
-            <linearGradient id="markGradient" x1="0" y1="1" x2="1" y2="0">
-              <stop offset="0" stop-color="var(--mark-from)"></stop>
-              <stop offset="1" stop-color="var(--mark-to)"></stop>
-            </linearGradient>
-          </defs>
-          <rect x="0.5" y="0.5" width="39" height="39" rx="11" fill="url(#markGradient)"></rect>
-          <path d="M7 22C13.5 22 18.5 11.5 33 8" class="mark-curve mark-curve-faint"></path>
-          <path d="M7 34C13.5 34 18.5 23.5 33 20" class="mark-curve mark-curve-faint"></path>
-          <path d="M7 28C13.5 28 18.5 17.5 33 14" class="mark-curve"></path>
-          <circle cx="25.3" cy="16.8" r="3.6" class="mark-dot"></circle>
-        </svg>
-      </span>
-      <span class="brand-name">Centile<span class="brand-name-alt">Track</span></span>
-    </h1>
-    <p class="tagline">Height, weight and head circumference centiles against the UK-WHO growth reference, from 23 weeks gestation to 20 years.</p>
+<header class="topbar">
+  <div class="wrap topbar-inner">
+    <span class="brand">
+      <svg class="brand-mark" viewBox="0 0 32 26" aria-hidden="true" focusable="false">
+        <path d="M2 20C7 20 11 8 30 3" class="mark-curve mark-faint"></path>
+        <path d="M2 24C7 24 11 16 30 12" class="mark-curve mark-faint"></path>
+        <path d="M2 22C7 22 11 12 30 7.5" class="mark-curve"></path>
+        <circle cx="21.5" cy="10.1" r="2.9" class="mark-dot"></circle>
+      </svg>
+      <span class="brand-name">CentileTrack</span>
+    </span>
     <div class="theme-switch" role="group" aria-label="Colour theme">
-      <label title="Follow system setting">
-        <input type="radio" name="theme" value="auto" checked>
-        <span>
-          <svg viewBox="0 0 24 24" aria-hidden="true" focusable="false">
-            <rect x="3" y="4" width="18" height="13" rx="2"></rect>
-            <path d="M8 21h8M12 17v4"></path>
-          </svg>
-          <span class="theme-label">Auto</span>
-        </span>
-      </label>
-      <label title="Always light">
-        <input type="radio" name="theme" value="light">
-        <span>
-          <svg viewBox="0 0 24 24" aria-hidden="true" focusable="false">
-            <circle cx="12" cy="12" r="4.2"></circle>
-            <path d="M12 2v2.6M12 19.4V22M2 12h2.6M19.4 12H22M4.9 4.9l1.9 1.9M17.2 17.2l1.9 1.9M19.1 4.9l-1.9 1.9M6.8 17.2l-1.9 1.9"></path>
-          </svg>
-          <span class="theme-label">Light</span>
-        </span>
-      </label>
-      <label title="Always dark">
-        <input type="radio" name="theme" value="dark">
-        <span>
-          <svg viewBox="0 0 24 24" aria-hidden="true" focusable="false">
-            <path d="M20 14.2A8.2 8.2 0 0 1 9.8 4a8.4 8.4 0 1 0 10.2 10.2z"></path>
-          </svg>
-          <span class="theme-label">Dark</span>
-        </span>
-      </label>
+      <label><input type="radio" name="theme" value="auto" checked><span>Auto</span></label>
+      <label><input type="radio" name="theme" value="light"><span>Light</span></label>
+      <label><input type="radio" name="theme" value="dark"><span>Dark</span></label>
     </div>
   </div>
 </header>
 
 <main class="wrap">
+  <p class="strapline">Height, weight and head circumference centiles against the UK-WHO growth reference, 23 weeks gestation to 20 years.</p>
+
   <form id="form" novalidate>
-    <section class="panel">
+    <section class="block">
       <h2>Child</h2>
       <div class="grid">
         <div class="field">
@@ -102,14 +68,13 @@
             <input type="number" id="gestationDays" name="gestationDays" min="0" max="6" step="1" value="0" aria-label="Gestation days">
             <span class="unit">weeks</span>
           </div>
-          <p class="hint">UK-WHO corrects for gestation at every gestation, not only preterm.</p>
         </div>
       </div>
+      <p class="hint">UK-WHO corrects for gestation at every gestation, not only preterm.</p>
     </section>
 
-    <section class="panel">
-      <h2>Measurements</h2>
-      <p class="hint hint-block">Enter any combination. Blank fields are ignored.</p>
+    <section class="block">
+      <h2>Measurements <span class="h2-note">enter any combination</span></h2>
       <div class="grid grid-3">
         <div class="field">
           <label class="label" for="height">Height / length</label>
@@ -133,83 +98,78 @@
           </div>
         </div>
       </div>
+      <div class="actions">
+        <button type="submit" class="primary">Calculate centiles</button>
+        <button type="reset" class="ghost">Clear</button>
+      </div>
     </section>
-
-    <div class="actions">
-      <button type="submit" class="primary">Calculate centiles</button>
-      <button type="reset" class="ghost">Clear</button>
-    </div>
   </form>
 
   <div id="errors" class="errors" role="alert" hidden></div>
 
-  <section id="results" class="results" hidden aria-live="polite">
-    <div class="panel">
-      <h2>Age</h2>
-      <div id="ageSummary" class="age-summary"></div>
-    </div>
-
-    <div class="panel">
-      <div class="panel-head">
-        <h2>Results</h2>
-        <button type="button" id="copyBtn" class="ghost small">Copy for notes</button>
+  <section id="results" hidden aria-live="polite">
+    <section class="block">
+      <h2>Results <button type="button" id="copyBtn" class="linklike">Copy for notes</button></h2>
+      <p id="ageSummary" class="meta-line"></p>
+      <div class="table-wrap">
+        <table class="results-table">
+          <thead>
+            <tr>
+              <th scope="col">Measurement</th>
+              <th scope="col" class="num">Value</th>
+              <th scope="col" class="num">Centile</th>
+              <th scope="col" class="num">SDS</th>
+              <th scope="col" class="pos-col">Position on reference</th>
+            </tr>
+          </thead>
+          <tbody id="resultsBody"></tbody>
+        </table>
       </div>
-      <div id="resultCards" class="cards"></div>
-    </div>
+      <p id="resultsNote" class="results-note"></p>
+    </section>
 
-    <div class="panel">
-      <div class="panel-head">
-        <h2>Chart</h2>
-        <div class="chart-controls">
-          <div id="measureTabs" class="tabs" role="tablist" aria-label="Measurement"></div>
-          <div id="rangeTabs" class="tabs tabs-muted" role="tablist" aria-label="Age range"></div>
-        </div>
+    <section class="block">
+      <h2>Chart</h2>
+      <div class="chart-controls">
+        <div id="measureTabs" class="tabs" role="tablist" aria-label="Measurement"></div>
+        <div id="rangeTabs" class="tabs" role="tablist" aria-label="Age range"></div>
       </div>
       <div id="chart" class="chart-holder"></div>
-      <p class="chart-key">
-        <span class="key-item"><span class="key-dot"></span> Chronological age</span>
-        <span class="key-item"><span class="key-dot key-dot-open"></span> Corrected for gestation</span>
-        <span class="key-item">Curves: 0.4 · 2 · 9 · 25 · 50 · 75 · 91 · 98 · 99.6</span>
-      </p>
+      <p id="chartKey" class="chart-key"></p>
       <p class="hint">Curves break at 2 weeks, 2 years and 4 years, where UK-WHO switches between the UK90 and WHO 2006 references. The steps are real, not a drawing artefact.</p>
-    </div>
+    </section>
   </section>
 
-  <section class="panel notes">
-    <h2>About CentileTrack</h2>
+  <footer class="colophon">
+    <h2>About</h2>
     <p>
-      Centiles and SDS (z-scores) are calculated by the LMS method against the
-      <strong>UK-WHO growth reference</strong>: UK90 data from 23 weeks gestation to
-      42 weeks, WHO 2006 standards from 2 weeks to 4 years, and UK90 again from
-      4 to 20 years.
+      Centiles and SDS are calculated by the LMS method against the UK-WHO growth
+      reference: UK90 from 23 weeks gestation to 42 weeks, WHO 2006 from 2 weeks
+      to 4 years, and UK90 again from 4 to 20 years. Validated against 5,724
+      reference values from the RCPCH test dataset, which originate from Tim
+      Cole's LMSGrowth; all agree within RCPCH's tolerance of 1&times;10<sup>&minus;3</sup> SDS
+      (median 6&times;10<sup>&minus;5</sup>).
     </p>
     <p>
-      The implementation is validated against 5,724 reference values from the
-      RCPCH test dataset, which originate from Tim Cole's LMSGrowth. All checks
-      agree within RCPCH's own acceptance tolerance of 1&times;10<sup>&minus;3</sup> SDS
-      (median difference 6&times;10<sup>&minus;5</sup>).
+      Nothing you type leaves this device. The reference tables are bundled into
+      the page and all calculation runs in the browser — no server, no database,
+      no analytics.
     </p>
-    <p class="privacy">
-      <strong>Nothing you type leaves this device.</strong> The reference tables are
-      bundled into the page and all calculation runs in your browser. There is no
-      server, no database and no analytics.
-    </p>
-    <p class="disclaimer">
-      This is a calculation aid for use by clinicians alongside clinical judgement.
-      It is not a medical device and should not be the sole basis for a clinical
-      decision. Always check the plotted point against the child's own chart and
-      growth trajectory.
+    <p>
+      A calculation aid for clinicians, to be used alongside clinical judgement.
+      Not a registered medical device. A single centile says far less than a
+      trajectory: read it against the child's own chart over time.
     </p>
     <p class="credit">
-      Reference data and calculation method derived from the
+      Reference data and method derived from
       <a href="https://github.com/rcpch/rcpchgrowth-python" rel="noopener">RCPCH rcpchgrowth-python</a>
-      package (AGPL-3.0). UK90: Cole TJ, Freeman JV, Preece MA. WHO 2006: WHO
-      Multicentre Growth Reference Study Group.
-      This app is licensed <a href="LICENSE" rel="noopener">AGPL-3.0</a> —
+      (AGPL-3.0). UK90: Cole TJ, Freeman JV, Preece MA. WHO 2006: WHO Multicentre
+      Growth Reference Study Group. Licensed
+      <a href="LICENSE" rel="noopener">AGPL-3.0</a> —
       <!-- AGPL compliance: this must stay a working link to the public source. -->
       <a id="sourceLink" href="https://github.com/tph110/uk-who-growth-centiles" rel="noopener">source code</a>.
     </p>
-  </section>
+  </footer>
 </main>
 
 <script type="module" src="app.js"></script>

@@ -11,7 +11,9 @@ const form = document.getElementById('form');
 const errorBox = document.getElementById('errors');
 const results = document.getElementById('results');
 const ageSummary = document.getElementById('ageSummary');
-const resultCards = document.getElementById('resultCards');
+const resultsBody = document.getElementById('resultsBody');
+const resultsNote = document.getElementById('resultsNote');
+const chartKey = document.getElementById('chartKey');
 const chartHolder = document.getElementById('chart');
 const measureTabs = document.getElementById('measureTabs');
 const rangeTabs = document.getElementById('rangeTabs');
@@ -192,88 +194,79 @@ function runCalculation(input) {
 const formatDate = (d) => d.toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric' });
 
 function renderAge(calc) {
-  const preterm = calc.gestationWeeks < 37;
-  const rows = [
-    `<div><dt>Chronological age</dt><dd>${describeAge(calc.chronological)}<span class="muted"> · ${calc.chronological.toFixed(3)} y</span></dd></div>`,
-  ];
+  const parts = [];
+  const chron = `${describeAge(calc.chronological)} <span class="muted">(${calc.chronological.toFixed(3)} y)</span>`;
 
   if (calc.isCorrected) {
-    rows.push(`<div><dt>Corrected age</dt><dd>${describeAge(calc.corrected)}<span class="muted"> · ${calc.corrected.toFixed(3)} y</span></dd></div>`);
-    rows.push(`<div><dt>Gestation at birth</dt><dd>${calc.gestationWeeks}+${calc.gestationDays} weeks${preterm ? ' <span class="tag">preterm</span>' : ''}</dd></div>`);
-    rows.push(`<div><dt>Estimated date of delivery</dt><dd>${formatDate(calc.edd)}</dd></div>`);
+    parts.push(`Corrected age <strong>${describeAge(calc.corrected)}</strong> <span class="muted">(${calc.corrected.toFixed(3)} y)</span>`);
+    parts.push(`Chronological ${chron}`);
+    parts.push(`Born ${calc.gestationWeeks}+${calc.gestationDays}${calc.gestationWeeks < 37 ? ' (preterm)' : ''}`);
+    parts.push(`EDD ${formatDate(calc.edd)}`);
   } else {
-    rows.push(`<div><dt>Gestation at birth</dt><dd>40+0 weeks · no correction applied</dd></div>`);
+    parts.push(`Chronological age <strong>${describeAge(calc.chronological)}</strong> <span class="muted">(${calc.chronological.toFixed(3)} y)</span>`);
+    parts.push('Born 40+0, no correction applied');
   }
 
-  ageSummary.innerHTML = `<dl>${rows.join('')}</dl>`;
+  ageSummary.innerHTML = parts.join('<span class="sep">·</span>');
 }
 
-function renderResultCard(key, entry, calc) {
+function centileBarCell(sds, centile) {
+  return `
+    <div class="pos-bar" data-sds="${sds}" role="img" aria-label="${centilePhrase(centile)}">
+      ${NINE_CENTILES.map((c) => `<span class="pos-tick${c.centile === 50 ? ' pos-tick-mid' : ''}" data-z="${c.z}"></span>`).join('')}
+      <span class="pos-marker"></span>
+    </div>`;
+}
+
+function renderResultRows(key, entry, calc) {
   const meta = MEASUREMENTS[key];
   const primaryAge = calc.isCorrected ? calc.corrected : calc.chronological;
   const label = labelForAge(key, primaryAge);
   const primary = calc.isCorrected ? entry.corrected : entry.chronological;
   const secondary = calc.isCorrected ? entry.chronological : null;
+  const value = `${entry.observation} <span class="unit-inline">${meta.unit}</span>`;
 
-  const value = `${entry.observation} ${meta.unit}`;
-  let body;
-
-  if (primary && primary.error) {
-    body = `<p class="card-error">${primary.error}</p>`;
-  } else if (primary && primary.implausible) {
-    body = `<p class="card-error">${primary.implausible}</p>`;
-  } else if (primary) {
-    const bandText = centileBand(primary.centile, label);
-    body = `
-      <div class="card-figures">
-        <div class="figure">
-          <span class="figure-value">${formatCentile(primary.centile)}</span>
-          <span class="figure-label">centile</span>
-        </div>
-        <div class="figure">
-          <span class="figure-value">${formatSDS(primary.sds)}</span>
-          <span class="figure-label">SDS</span>
-        </div>
-      </div>
-      <div class="centile-bar">
-        <div class="centile-bar-track" data-sds="${primary.sds}"
-          role="img" aria-label="${centilePhrase(primary.centile)}">
-          ${NINE_CENTILES.map((c) => `<span class="centile-bar-tick${c.centile === 50 ? ' centile-bar-tick-mid' : ''}" data-z="${c.z}"></span>`).join('')}
-          <span class="centile-bar-marker"></span>
-        </div>
-        <div class="centile-bar-scale" aria-hidden="true">
-          <span>0.4th</span><span>50th</span><span>99.6th</span>
-        </div>
-      </div>
-      <p class="card-band">${bandText}</p>
-      <p class="card-meta">
-        ${calc.isCorrected ? 'Corrected age' : 'Chronological age'} · ${primary.reference} reference
-      </p>`;
-
-    if (secondary) {
-      let secText;
-      if (secondary.error) {
-        secText = secondary.error;
-      } else if (secondary.implausible) {
-        // For a very preterm baby the uncorrected figure is not a data-entry
-        // error, it is simply meaningless without correction. Say that
-        // instead of prompting for a units check.
-        secText = 'Off the reference without correction for gestation.';
-      } else {
-        secText = `${centilePhrase(secondary.centile)} · SDS ${formatSDS(secondary.sds)}`;
-      }
-      body += `<p class="card-secondary"><span>Uncorrected (chronological age)</span> ${secText}</p>`;
-    }
+  const issue = primary && (primary.error || primary.implausible);
+  if (!primary || issue) {
+    return `
+      <tr class="row-issue">
+        <th scope="row">${label}</th>
+        <td class="num">${value}</td>
+        <td colspan="3" class="issue">${issue || 'Not calculated.'}</td>
+      </tr>`;
   }
 
-  return `
-    <article class="card">
-      <header>
-        <h3>${label}</h3>
-        <span class="card-value">${value}</span>
-      </header>
-      ${body}
-    </article>`;
+  let rows = `
+    <tr>
+      <th scope="row">${label}</th>
+      <td class="num">${value}</td>
+      <td class="num strong">${formatCentile(primary.centile)}</td>
+      <td class="num strong">${formatSDS(primary.sds)}</td>
+      <td class="pos-col">${centileBarCell(primary.sds, primary.centile)}</td>
+    </tr>`;
+
+  if (secondary) {
+    let cells;
+    if (secondary.error || secondary.implausible) {
+      // For a very preterm baby the uncorrected figure is not a data-entry
+      // error, it is simply meaningless without correction.
+      const text = secondary.error || 'Off the reference without correction for gestation.';
+      cells = `<td colspan="3" class="issue-soft">${text}</td>`;
+    } else {
+      cells = `
+        <td class="num">${formatCentile(secondary.centile)}</td>
+        <td class="num">${formatSDS(secondary.sds)}</td>
+        <td class="pos-col">${centileBarCell(secondary.sds, secondary.centile)}</td>`;
+    }
+    rows += `
+      <tr class="row-sub">
+        <th scope="row">Uncorrected</th>
+        <td class="num"></td>
+        ${cells}
+      </tr>`;
+  }
+
+  return rows;
 }
 
 /**
@@ -290,12 +283,12 @@ const SDS_BAR_LIMIT = 3;
 const sdsToPercent = (z) => ((Math.max(-SDS_BAR_LIMIT, Math.min(SDS_BAR_LIMIT, z)) + SDS_BAR_LIMIT) / (SDS_BAR_LIMIT * 2)) * 100;
 
 function positionCentileBars() {
-  for (const track of resultCards.querySelectorAll('.centile-bar-track')) {
-    for (const tick of track.querySelectorAll('.centile-bar-tick')) {
+  for (const bar of resultsBody.querySelectorAll('.pos-bar')) {
+    for (const tick of bar.querySelectorAll('.pos-tick')) {
       tick.style.left = `${sdsToPercent(Number(tick.dataset.z))}%`;
     }
-    const marker = track.querySelector('.centile-bar-marker');
-    const sds = Number(track.dataset.sds);
+    const marker = bar.querySelector('.pos-marker');
+    const sds = Number(bar.dataset.sds);
     marker.style.left = `${sdsToPercent(sds)}%`;
     if (Math.abs(sds) > SDS_BAR_LIMIT) marker.classList.add('off-scale');
   }
@@ -303,10 +296,23 @@ function positionCentileBars() {
 
 function renderResults(calc) {
   renderAge(calc);
-  resultCards.innerHTML = Object.entries(calc.measurements)
-    .map(([key, entry]) => renderResultCard(key, entry, calc))
+  resultsBody.innerHTML = Object.entries(calc.measurements)
+    .map(([key, entry]) => renderResultRows(key, entry, calc))
     .join('');
   positionCentileBars();
+
+  // The reference is normally the same for every measurement, so state it once
+  // beneath the table rather than repeating it on each row.
+  const references = [...new Set(
+    Object.values(calc.measurements)
+      .map((e) => (calc.isCorrected ? e.corrected : e.chronological))
+      .filter((r) => r && !r.error && r.reference)
+      .map((r) => r.reference),
+  )];
+  const ageType = calc.isCorrected ? 'corrected age' : 'chronological age';
+  resultsNote.textContent = references.length
+    ? `Plotted at ${ageType} against the ${references.join(' and ')} reference.`
+    : '';
 }
 
 function renderTabs() {
@@ -331,20 +337,30 @@ function drawChart() {
   const key = state.measurement;
   const entry = calc.measurements[key];
 
+  // The primary point is the age the result is reported at: corrected where a
+  // correction applies, chronological otherwise.
   const points = [{
-    age: calc.chronological,
+    age: calc.isCorrected ? calc.corrected : calc.chronological,
     value: entry.observation,
-    kind: 'chronological',
-    label: 'Chronological age',
+    kind: 'primary',
+    label: calc.isCorrected ? 'Corrected age' : 'Chronological age',
   }];
   if (calc.isCorrected) {
     points.push({
-      age: calc.corrected,
+      age: calc.chronological,
       value: entry.observation,
-      kind: 'corrected',
-      label: 'Corrected age',
+      kind: 'secondary',
+      label: 'Chronological age (uncorrected)',
     });
   }
+
+  chartKey.innerHTML = [
+    `<span class="key-item"><span class="key-dot"></span> ${calc.isCorrected ? 'Corrected age' : 'Chronological age'}</span>`,
+    calc.isCorrected
+      ? '<span class="key-item"><span class="key-dot key-dot-open"></span> Uncorrected</span>'
+      : '',
+    '<span class="key-item">Curves 0.4 · 2 · 9 · 25 · 50 · 75 · 91 · 98 · 99.6</span>',
+  ].filter(Boolean).join('');
 
   renderChart(chartHolder, {
     measurement: key,
@@ -472,7 +488,7 @@ function showNoteFallback(text) {
     block.id = 'noteFallback';
     block.className = 'note-fallback';
     block.innerHTML = '<p>Copying was blocked by the browser. Select the text below and copy it manually.</p><textarea readonly rows="10"></textarea>';
-    resultCards.after(block);
+    resultsNote.after(block);
   }
   const area = block.querySelector('textarea');
   area.value = text;
