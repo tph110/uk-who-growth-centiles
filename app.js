@@ -23,6 +23,53 @@ const state = {
   rangeKey: null,
 };
 
+// --- Theme -----------------------------------------------------------------
+
+const THEME_KEY = 'growth-centiles-theme';
+
+/**
+ * Applies a theme choice. 'auto' removes the override so the CSS falls back to
+ * the operating system's prefers-color-scheme, rather than us second-guessing
+ * it in JavaScript.
+ */
+function applyTheme(choice) {
+  if (choice === 'light' || choice === 'dark') {
+    document.documentElement.setAttribute('data-theme', choice);
+  } else {
+    document.documentElement.removeAttribute('data-theme');
+  }
+}
+
+function initTheme() {
+  let stored = 'auto';
+  try {
+    stored = localStorage.getItem(THEME_KEY) || 'auto';
+  } catch {
+    // Storage unavailable; fall back to following the system.
+  }
+  if (!['auto', 'light', 'dark'].includes(stored)) stored = 'auto';
+
+  const radios = [...document.querySelectorAll('input[name="theme"]')];
+  const match = radios.find((r) => r.value === stored) || radios[0];
+  if (match) match.checked = true;
+  applyTheme(stored);
+
+  for (const radio of radios) {
+    radio.addEventListener('change', () => {
+      if (!radio.checked) return;
+      applyTheme(radio.value);
+      try {
+        localStorage.setItem(THEME_KEY, radio.value);
+      } catch {
+        // Preference simply will not persist; the page still switches.
+      }
+      // The chart takes its colours from CSS, so it repaints on its own.
+    });
+  }
+}
+
+initTheme();
+
 // Default the measurement date to today; it is by far the commonest case.
 document.getElementById('observationDate').valueAsDate = new Date();
 

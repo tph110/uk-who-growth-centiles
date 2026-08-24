@@ -29,8 +29,13 @@
   --shadow: 0 1px 2px rgb(16 24 32 / 6%), 0 4px 14px rgb(16 24 32 / 5%);
 }
 
+/* Dark palette.
+   These two blocks must stay identical. The first applies when the operating
+   system asks for dark and the reader has not overridden it; the second when
+   they have explicitly chosen dark from the toggle. CSS cannot combine a media
+   query and an attribute selector into one rule, hence the repetition. */
 @media (prefers-color-scheme: dark) {
-  :root {
+  :root:not([data-theme="light"]) {
     --bg: #0f151b;
     --surface: #161e26;
     --surface-2: #1d2731;
@@ -57,6 +62,38 @@
     --shadow: 0 1px 2px rgb(0 0 0 / 30%), 0 4px 16px rgb(0 0 0 / 25%);
   }
 }
+
+:root[data-theme="dark"] {
+  --bg: #0f151b;
+  --surface: #161e26;
+  --surface-2: #1d2731;
+  --border: #2a3742;
+  --border-strong: #3a4956;
+  --text: #e6ecf2;
+  --text-muted: #9aabb9;
+  --accent: #6fb3dd;
+  --accent-strong: #8ec6ea;
+  --accent-soft: #1a2c3a;
+  /* --accent is a light blue in dark mode, so text on it must be dark. */
+  --on-accent: #0d1319;
+  --banner: #143243;
+  --banner-text: #eaf3f9;
+  --banner-muted: rgb(234 243 249 / 78%);
+  --banner-edge: #0c2331;
+  --danger: #f2919a;
+  --danger-soft: #34191c;
+  --grid: #232f3a;
+  --curve: #56687a;
+  --curve-outer: #6c7f92;
+  --median: #6fb3dd;
+  --point: #ff6b74;
+  --shadow: 0 1px 2px rgb(0 0 0 / 30%), 0 4px 16px rgb(0 0 0 / 25%);
+}
+
+/* Keep native controls - date fields, selects, scrollbars - in step with the
+   chosen theme rather than the system one. */
+:root[data-theme="light"] { color-scheme: light; }
+:root[data-theme="dark"] { color-scheme: dark; }
 
 * { box-sizing: border-box; }
 
@@ -486,9 +523,38 @@ button.small { padding: 6px 12px; min-height: 34px; font-size: 0.86rem; }
 /* --- Print --------------------------------------------------------------- */
 
 @media print {
-  :root { --bg: #fff; --surface: #fff; --surface-2: #fff; }
+  /* Always print as ink on paper. Without this a reader who has chosen the
+     dark theme would print near-white text onto a white page. The selector
+     list is deliberate: it has to out-specify :root[data-theme="dark"]. */
+  :root,
+  :root[data-theme="light"],
+  :root[data-theme="dark"] {
+    color-scheme: light;
+    --bg: #fff;
+    --surface: #fff;
+    --surface-2: #fff;
+    --border: #c8ced6;
+    --border-strong: #98a2ae;
+    --text: #101820;
+    --text-muted: #45505c;
+    --accent: #1f5f8b;
+    --accent-strong: #17486a;
+    --accent-soft: #eef4f8;
+    --on-accent: #fff;
+    --banner: #fff;
+    --banner-text: #101820;
+    --banner-muted: #45505c;
+    --banner-edge: #c8ced6;
+    --grid: #e2e6eb;
+    --curve: #9aa8b6;
+    --curve-outer: #6f7d8c;
+    --median: #1f5f8b;
+    --point: #b8232c;
+    --shadow: none;
+  }
+
   .masthead { margin-bottom: 12px; }
-  form, .actions, .chart-controls, #copyBtn, .notes { display: none; }
+  form, .actions, .chart-controls, #copyBtn, .notes, .theme-switch { display: none; }
   .panel { break-inside: avoid; box-shadow: none; }
 }
 
@@ -703,4 +769,115 @@ button.small { padding: 6px 12px; min-height: 34px; font-size: 0.86rem; }
 
 @media (prefers-color-scheme: dark) {
   .datepicker { box-shadow: 0 6px 30px rgb(0 0 0 / 55%); }
+}
+
+/* --- Theme switch --------------------------------------------------------- */
+
+/* Grid rather than flex so the switch can sit top-right on a wide screen but
+   drop below the tagline on a narrow one, without the markup order changing.
+   Source order is heading, tagline, switch — content before control. */
+.masthead-grid {
+  display: grid;
+  grid-template-columns: 1fr auto;
+  align-items: center;
+  column-gap: 20px;
+  row-gap: 6px;
+}
+
+.masthead-grid h1 { grid-column: 1; grid-row: 1; }
+
+.masthead-grid .tagline { grid-column: 1 / -1; grid-row: 2; }
+
+.masthead-grid .theme-switch {
+  grid-column: 2;
+  grid-row: 1;
+  justify-self: end;
+}
+
+.theme-switch {
+  display: inline-flex;
+  gap: 2px;
+  padding: 3px;
+  border-radius: 9px;
+  background: rgb(255 255 255 / 12%);
+  border: 1px solid rgb(255 255 255 / 18%);
+  flex: none;
+}
+
+.theme-switch label { display: flex; }
+
+.theme-switch input {
+  position: absolute;
+  opacity: 0;
+  pointer-events: none;
+}
+
+.theme-switch span:not(.theme-label) {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 6px 11px;
+  border-radius: 7px;
+  cursor: pointer;
+  font-size: 0.82rem;
+  font-weight: 550;
+  color: var(--banner-muted);
+  white-space: nowrap;
+}
+
+.theme-switch svg {
+  width: 15px;
+  height: 15px;
+  fill: none;
+  stroke: currentColor;
+  stroke-width: 1.8;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+
+.theme-switch label:hover span:not(.theme-label) {
+  background: rgb(255 255 255 / 10%);
+  color: var(--banner-text);
+}
+
+.theme-switch input:checked + span {
+  background: var(--banner-text);
+  color: var(--banner);
+  font-weight: 650;
+}
+
+.theme-switch input:focus-visible + span {
+  outline: 2px solid var(--banner-text);
+  outline-offset: 2px;
+}
+
+@media (max-width: 600px) {
+  /* Stack on a phone, with the switch after the tagline so the heading and its
+     description stay together. */
+  .masthead-grid { grid-template-columns: 1fr; row-gap: 10px; }
+  .masthead-grid h1 { grid-row: 1; }
+  .masthead-grid .tagline { grid-column: 1; grid-row: 2; }
+  .masthead-grid .theme-switch { grid-column: 1; grid-row: 3; justify-self: start; }
+
+  /* Icons alone on a phone: the banner has no room for three labels. */
+  .theme-label {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    margin: -1px;
+    padding: 0;
+    overflow: hidden;
+    clip-path: inset(50%);
+    white-space: nowrap;
+  }
+
+  /* Without labels the pills collapse to about 29px, too small to hit
+     reliably with a thumb. Hold them near the 44px touch guideline. */
+  .theme-switch span:not(.theme-label) {
+    padding: 0 14px;
+    min-height: 38px;
+    justify-content: center;
+  }
+
+  .theme-switch svg { width: 17px; height: 17px; }
 }

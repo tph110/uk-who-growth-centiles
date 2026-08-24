@@ -16,6 +16,7 @@ Every calculation runs in the browser and **no patient data leaves the device**.
 - A large date picker with month and year jumping — the native `<input type="date">`
   popup is browser chrome that CSS cannot resize, and it makes you step back a
   month at a time to reach a date of birth
+- Light / dark / auto theme toggle, remembered between visits
 - A "copy for notes" summary in plain text
 - Rejects implausible values (beyond ±8 SD) with a hint at the likely cause,
   such as weight entered in grams or height in metres
