@@ -1,4 +1,4 @@
-# UK-WHO Growth Centiles
+# CentileTrack
 
 A browser-based calculator that converts a child's height/length, weight and
 head circumference into centiles and SDS (z-scores) against the **UK-WHO growth
@@ -17,6 +17,8 @@ Every calculation runs in the browser and **no patient data leaves the device**.
   popup is browser chrome that CSS cannot resize, and it makes you step back a
   month at a time to reach a date of birth
 - Light / dark / auto theme toggle, remembered between visits
+- A per-measurement position bar, scaled by SDS so the nine printed centile
+  lines fall at even intervals — scaling by centile would crowd the middle
 - A "copy for notes" summary in plain text
 - Rejects implausible values (beyond ±8 SD) with a hint at the likely cause,
   such as weight entered in grams or height in metres
@@ -105,6 +107,13 @@ The repository is a static site with no build. Deploy to Vercel with:
 ```bash
 npx vercel --prod
 ```
+
+## Typography
+
+Inter is self-hosted from `fonts/` (latin subset, 48KB) rather than loaded from
+a font CDN. The page tells the reader that nothing they type leaves the device;
+a webfont request would hand a third party a record of every visit, which would
+make that claim untrue.
 
 ## Licence and attribution
 

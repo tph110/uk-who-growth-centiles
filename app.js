@@ -2,7 +2,7 @@
 
 import {
   calculate, chronologicalDecimalAge, correctedDecimalAge, estimatedDateOfDelivery,
-  describeAge, centileBand, centilePhrase, labelForAge, MEASUREMENTS,
+  describeAge, centileBand, centilePhrase, labelForAge, MEASUREMENTS, NINE_CENTILES,
 } from './lib/centile.js';
 import { renderChart, defaultRange, RANGES } from './lib/chart.js';
 import { attachDatePicker } from './lib/datepicker.js';
@@ -235,6 +235,16 @@ function renderResultCard(key, entry, calc) {
           <span class="figure-label">SDS</span>
         </div>
       </div>
+      <div class="centile-bar">
+        <div class="centile-bar-track" data-sds="${primary.sds}"
+          role="img" aria-label="${centilePhrase(primary.centile)}">
+          ${NINE_CENTILES.map((c) => `<span class="centile-bar-tick${c.centile === 50 ? ' centile-bar-tick-mid' : ''}" data-z="${c.z}"></span>`).join('')}
+          <span class="centile-bar-marker"></span>
+        </div>
+        <div class="centile-bar-scale" aria-hidden="true">
+          <span>0.4th</span><span>50th</span><span>99.6th</span>
+        </div>
+      </div>
       <p class="card-band">${bandText}</p>
       <p class="card-meta">
         ${calc.isCorrected ? 'Corrected age' : 'Chronological age'} · ${primary.reference} reference
@@ -266,11 +276,37 @@ function renderResultCard(key, entry, calc) {
     </article>`;
 }
 
+/**
+ * The bar is scaled by SDS rather than by centile, because that is how the
+ * printed centile lines are spaced: the nine of them sit two-thirds of an SD
+ * apart, so they land at even intervals. Scaling by centile would crowd
+ * everything into the middle.
+ *
+ * Positions are applied through the CSSOM rather than written into the markup:
+ * the site ships style-src 'self' with no 'unsafe-inline', which blocks style
+ * attributes parsed from HTML.
+ */
+const SDS_BAR_LIMIT = 3;
+const sdsToPercent = (z) => ((Math.max(-SDS_BAR_LIMIT, Math.min(SDS_BAR_LIMIT, z)) + SDS_BAR_LIMIT) / (SDS_BAR_LIMIT * 2)) * 100;
+
+function positionCentileBars() {
+  for (const track of resultCards.querySelectorAll('.centile-bar-track')) {
+    for (const tick of track.querySelectorAll('.centile-bar-tick')) {
+      tick.style.left = `${sdsToPercent(Number(tick.dataset.z))}%`;
+    }
+    const marker = track.querySelector('.centile-bar-marker');
+    const sds = Number(track.dataset.sds);
+    marker.style.left = `${sdsToPercent(sds)}%`;
+    if (Math.abs(sds) > SDS_BAR_LIMIT) marker.classList.add('off-scale');
+  }
+}
+
 function renderResults(calc) {
   renderAge(calc);
   resultCards.innerHTML = Object.entries(calc.measurements)
     .map(([key, entry]) => renderResultCard(key, entry, calc))
     .join('');
+  positionCentileBars();
 }
 
 function renderTabs() {
