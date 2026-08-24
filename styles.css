@@ -274,7 +274,7 @@ body {
 
 .label { font-size: 0.79rem; font-weight: 550; color: var(--text-muted); }
 
-input[type="date"],
+input[type="text"],
 input[type="number"] {
   font: inherit;
   font-variant-numeric: tabular-nums;
@@ -287,10 +287,10 @@ input[type="number"] {
   min-height: 36px;
 }
 
-input[type="date"]:hover,
+input[type="text"]:hover,
 input[type="number"]:hover { border-color: var(--text-faint); }
 
-input[type="date"]:focus,
+input[type="text"]:focus,
 input[type="number"]:focus {
   outline: none;
   border-color: var(--accent);
@@ -641,15 +641,7 @@ button.ghost:hover { background: var(--fill); }
 
 .date-field { position: relative; display: flex; align-items: center; }
 
-.date-field input[type="date"] { padding-right: 38px; }
-
-/* Hide the native calendar icon so there is only one way in. The native popup
-   is browser chrome and cannot be resized from here, which is the whole reason
-   the custom panel below exists. */
-.date-field input[type="date"]::-webkit-calendar-picker-indicator {
-  display: none;
-  -webkit-appearance: none;
-}
+.date-field input { padding-right: 38px; }
 
 .date-trigger {
   position: absolute;
@@ -665,6 +657,8 @@ button.ghost:hover { background: var(--fill); }
   border-radius: var(--radius);
   color: var(--text-faint);
 }
+
+.date-field:focus-within .date-trigger { color: var(--accent); }
 
 .date-trigger:hover { background: var(--fill); color: var(--accent); }
 
@@ -859,4 +853,8 @@ button.ghost:hover { background: var(--fill); }
   .wrap { padding: 0 14px; }
   .topbar-inner { flex-wrap: wrap; gap: 10px; }
   .pos-col { width: 130px; min-width: 110px; }
+
+  /* 34px cells are fine for a mouse but tight for a thumb. */
+  .dp-day { height: 40px; min-height: 40px; font-size: 0.92rem; }
+  .datepicker { padding: 12px; }
 }

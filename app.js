@@ -5,7 +5,7 @@ import {
   describeAge, centileBand, centilePhrase, labelForAge, MEASUREMENTS, NINE_CENTILES,
 } from './lib/centile.js';
 import { renderChart, defaultRange, RANGES } from './lib/chart.js';
-import { attachDatePicker } from './lib/datepicker.js';
+import { attachDatePicker, parseUKDate, formatUKDate } from './lib/datepicker.js';
 
 const form = document.getElementById('form');
 const errorBox = document.getElementById('errors');
@@ -72,25 +72,25 @@ function initTheme() {
 
 initTheme();
 
-// Default the measurement date to today; it is by far the commonest case.
-document.getElementById('observationDate').valueAsDate = new Date();
+// UK-WHO covers birth to 20 years, so neither date needs to reach further back
+// than that. The window also lets a two-digit typed year resolve unambiguously.
+const YEAR_BACK = -21;
+const yearWindow = () => {
+  const year = new Date().getFullYear();
+  return [year + YEAR_BACK, year];
+};
 
-// UK-WHO covers birth to 20 years, so a date of birth never needs to reach
-// further back than that.
+// Default the measurement date to today; it is by far the commonest case.
+document.getElementById('observationDate').value = formatUKDate(new Date());
+
 attachDatePicker(document.getElementById('birthDate'), {
-  label: 'date of birth', minYearOffset: -21, maxYearOffset: 0,
+  minYearOffset: YEAR_BACK, maxYearOffset: 0,
 });
 attachDatePicker(document.getElementById('observationDate'), {
-  label: 'date measured', minYearOffset: -21, maxYearOffset: 0,
+  minYearOffset: YEAR_BACK, maxYearOffset: 0,
 });
 
-function parseDateInput(value) {
-  if (!value) return null;
-  const [y, m, d] = value.split('-').map(Number);
-  if (!y || !m || !d) return null;
-  const date = new Date(y, m - 1, d);
-  return Number.isNaN(date.getTime()) ? null : date;
-}
+const parseDateInput = (value) => parseUKDate(value, yearWindow());
 
 function showErrors(messages) {
   if (!messages.length) {
@@ -122,8 +122,17 @@ function readForm() {
 
   const errors = [];
   if (!sex) errors.push('Select the child’s sex.');
-  if (!birthDate) errors.push('Enter a date of birth.');
-  if (!observationDate) errors.push('Enter the date the measurements were taken.');
+  // Distinguish a blank field from one that has been typed but cannot be read.
+  if (!birthDate) {
+    errors.push(String(data.get('birthDate') || '').trim()
+      ? 'The date of birth could not be read. Use dd/mm/yyyy.'
+      : 'Enter a date of birth.');
+  }
+  if (!observationDate) {
+    errors.push(String(data.get('observationDate') || '').trim()
+      ? 'The date measured could not be read. Use dd/mm/yyyy.'
+      : 'Enter the date the measurements were taken.');
+  }
   if (birthDate && observationDate && birthDate > observationDate) {
     errors.push('The date of birth is after the date measured.');
   }
@@ -430,7 +439,7 @@ form.addEventListener('reset', () => {
   showErrors([]);
   state.calculated = null;
   requestAnimationFrame(() => {
-    document.getElementById('observationDate').valueAsDate = new Date();
+    document.getElementById('observationDate').value = formatUKDate(new Date());
   });
 });
 
