@@ -22,6 +22,10 @@ Every calculation runs in the browser and **no patient data leaves the device**.
 - A per-measurement position bar, scaled by SDS so the nine printed centile
   lines fall at even intervals — scaling by centile would crowd the middle
 - A "copy for notes" summary in plain text
+- Save as PDF for the record, with a ruled box at the top for the patient's
+  name and hospital number to be written in by hand. Printing goes through the
+  browser rather than a bundled PDF library: the text stays selectable, the
+  chart stays vector, and nothing is added to the page weight
 - Rejects implausible values (beyond ±8 SD) with a hint at the likely cause,
   such as weight entered in grams or height in metres
 

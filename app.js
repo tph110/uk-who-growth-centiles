@@ -21,6 +21,8 @@ const chartHolder = document.getElementById('chart');
 const measureTabs = document.getElementById('measureTabs');
 const rangeTabs = document.getElementById('rangeTabs');
 const copyBtn = document.getElementById('copyBtn');
+const pdfBtn = document.getElementById('pdfBtn');
+const printedOn = document.getElementById('printedOn');
 
 const state = {
   calculated: null,
@@ -716,6 +718,39 @@ copyBtn.addEventListener('click', async () => {
   }
 
   showNoteFallback(text);
+});
+
+// --- Printing / PDF --------------------------------------------------------
+
+const BASE_TITLE = document.title;
+
+/**
+ * Prepares the page for print. Browsers use document.title as the suggested
+ * filename in their Save as PDF dialog, so it is worth making it identify the
+ * record rather than the app.
+ */
+function preparePrint() {
+  const now = new Date();
+  printedOn.textContent = `Printed ${formatDate(now)}.`;
+
+  const calc = state.calculated;
+  if (!calc) return;
+  const sexLabel = calc.sex === 'male' ? 'male' : 'female';
+  document.title = `CentileTrack growth centiles — ${sexLabel} born ${formatDate(calc.birthDate)}`;
+}
+
+function restoreAfterPrint() {
+  document.title = BASE_TITLE;
+}
+
+window.addEventListener('beforeprint', preparePrint);
+window.addEventListener('afterprint', restoreAfterPrint);
+
+pdfBtn.addEventListener('click', () => {
+  // Also prepared here rather than relying only on beforeprint, which not
+  // every browser fires dependably.
+  preparePrint();
+  window.print();
 });
 
 window.addEventListener('resize', () => {

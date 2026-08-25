@@ -32,6 +32,25 @@
 </header>
 
 <main class="wrap">
+  <!-- Print only: the identification box for the paper or PDF record. The
+       fields are ruled lines, to be completed by hand. -->
+  <section class="record-header">
+    <div class="record-brand">
+      <span class="record-app">CentileTrack</span>
+      <span class="record-sub">UK-WHO growth centiles</span>
+    </div>
+    <dl class="record-fields">
+      <div class="record-field">
+        <dt>Name</dt>
+        <dd></dd>
+      </div>
+      <div class="record-field">
+        <dt>Hospital number</dt>
+        <dd></dd>
+      </div>
+    </dl>
+  </section>
+
   <p class="strapline">Height, weight and head circumference centiles against the UK-WHO growth reference, 23 weeks gestation to 20 years.</p>
 
   <form id="form" novalidate>
@@ -99,7 +118,12 @@
 
   <section id="results" hidden aria-live="polite">
     <section class="block">
-      <h2>Results <button type="button" id="copyBtn" class="linklike">Copy for notes</button></h2>
+      <h2>Results
+        <span class="h2-actions">
+          <button type="button" id="copyBtn" class="linklike">Copy for notes</button>
+          <button type="button" id="pdfBtn" class="linklike">Save as PDF</button>
+        </span>
+      </h2>
       <p id="ageSummary" class="meta-line"></p>
       <div id="resultsTables"></div>
       <p id="resultsNote" class="results-note"></p>
@@ -116,6 +140,12 @@
       <p class="hint">Curves break at 2 weeks, 2 years and 4 years, where UK-WHO switches between the UK90 and WHO 2006 references. The steps are real, not a drawing artefact.</p>
     </section>
   </section>
+
+  <p class="record-footer">
+    Calculated by CentileTrack against the UK-WHO growth reference (UK90 / WHO
+    2006) by the LMS method. A calculation aid, not a registered medical device.
+    <span id="printedOn"></span>
+  </p>
 
   <footer class="colophon">
     <h2>About</h2>

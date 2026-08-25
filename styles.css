@@ -883,45 +883,155 @@ button.ghost:hover { background: var(--fill); }
 
 .age-cell { color: var(--text-muted); font-size: 0.85rem; white-space: nowrap; }
 
+/* --- Record header (print only) ------------------------------------------- */
+
+.record-header,
+.record-footer { display: none; }
+
+.h2-actions { display: inline-flex; gap: 14px; }
+
 /* --- Print ---------------------------------------------------------------- */
 
+@page {
+  size: A4 portrait;
+  margin: 14mm 13mm;
+}
+
 @media print {
-  /* Always print as ink on paper. Without this a reader who has chosen the
-     dark theme would print near-white text onto a white page. The selector
-     list is deliberate: it has to out-specify :root[data-theme="dark"]. */
+  /* Always print as ink on paper, whatever the reader is looking at.
+     The selector list has to out-specify BOTH dark rules. A bare :root is
+     only (0,1,0) and loses to :root:not([data-theme="light"]) inside the
+     prefers-color-scheme block — which is the case that matters most, since
+     it is what anyone on Auto with a dark system hits. Repeating that exact
+     selector here wins on order instead. */
   :root,
+  :root:not([data-theme="light"]),
   :root[data-theme="light"],
   :root[data-theme="dark"] {
     color-scheme: light;
     --bg: #fff;
     --fill: #fff;
     --fill-2: #fff;
-    --border: #c8ced6;
-    --border-strong: #98a2ae;
-    --rule: #98a2ae;
+    --border: #c4ccd5;
+    --border-strong: #8d97a3;
+    --rule: #8d97a3;
     --text: #101820;
-    --text-muted: #45505c;
-    --text-faint: #5c6773;
+    --text-muted: #3d4753;
+    --text-faint: #55606c;
     --accent: #15598f;
     --accent-strong: #0f4571;
     --accent-soft: #eef4fa;
     --on-accent: #fff;
-    --topbar: #fff;
-    --topbar-text: #101820;
-    --topbar-muted: #45505c;
-    --topbar-line: #c8ced6;
-    --grid: #e2e6eb;
+    --grid: #e4e8ed;
     --plot: #fff;
     --curve: #9aa8b6;
     --curve-outer: #6f7d8c;
     --median: #15598f;
-    --point: #b3272e;
+    --point: #a3232a;
   }
 
-  .topbar { border-bottom: 1px solid var(--rule); }
-  form, .actions, .chart-controls, #copyBtn, .colophon, .theme-switch,
-  .strapline { display: none; }
-  .block { break-inside: avoid; }
+  body { font-size: 9.5pt; line-height: 1.42; }
+
+  .wrap { max-width: none; padding: 0; }
+
+  /* Everything for entering data, and everything that is chrome rather than
+     record, comes off the page. */
+  .topbar, .strapline, form, .actions, .chart-controls, .h2-actions,
+  .colophon, .note-fallback, .chart-note { display: none !important; }
+
+  .record-header {
+    display: block;
+    border: 1pt solid var(--text);
+    padding: 6pt 8pt 8pt;
+    margin: 0 0 10pt;
+    break-inside: avoid;
+    break-after: avoid;
+  }
+
+  .record-brand {
+    display: flex;
+    align-items: baseline;
+    gap: 7pt;
+    margin-bottom: 7pt;
+    padding-bottom: 5pt;
+    border-bottom: 0.5pt solid var(--border);
+  }
+
+  .record-app { font-size: 11pt; font-weight: 700; letter-spacing: -0.01em; }
+
+  .record-sub { font-size: 8.5pt; color: var(--text-muted); }
+
+  .record-fields {
+    display: grid;
+    grid-template-columns: 1.5fr 1fr;
+    gap: 0 16pt;
+    margin: 0;
+  }
+
+  .record-field dt {
+    font-size: 7.5pt;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.07em;
+    color: var(--text-muted);
+    margin-bottom: 2pt;
+  }
+
+  /* Ruled lines, sized for handwriting. */
+  .record-field dd {
+    margin: 0;
+    height: 22pt;
+    border-bottom: 0.75pt solid var(--text);
+  }
+
+  /* Not break-inside: avoid — the results block runs past a page once there
+     are several measurements, and an oversized unbreakable block just leaves
+     a gap. The parts that should stay whole say so individually. */
+  .block { margin-bottom: 12pt; }
+
+  .block > h2 {
+    font-size: 9pt;
+    margin-bottom: 6pt;
+    padding-bottom: 3pt;
+    display: block;
+  }
+
+  .meta-line { font-size: 8.5pt; margin-bottom: 8pt; }
+
+  /* Scroll containers must not clip on paper, and the minimum widths that
+     force scrolling on a narrow screen would overflow the page. */
+  .table-wrap, .chart-holder { overflow: visible; }
+  .results-table, .obs-table, .chart { min-width: 0; }
+
+  .results-table th, .results-table td { padding: 3.5pt 8pt 3.5pt 0; }
+
+  .results-table thead th { font-size: 7.5pt; }
+
+  .results-table tbody th { font-size: 8.5pt; }
+
+  .results-table .strong { font-size: 9pt; }
+
+  .series { break-inside: avoid; margin-bottom: 10pt; }
+
+  .series-title { font-size: 8.5pt; margin-bottom: 4pt; }
+
+  .pos-col { width: 26mm; }
+
+  .chart-holder { break-inside: avoid; }
+
+  .chart-key { font-size: 7.5pt; margin-top: 6pt; break-before: avoid; }
+
+  .record-footer {
+    display: block;
+    margin: 12pt 0 0;
+    padding-top: 5pt;
+    border-top: 0.5pt solid var(--border);
+    font-size: 7.5pt;
+    color: var(--text-muted);
+    break-inside: avoid;
+  }
+
+  a { text-decoration: none; color: var(--text); }
 }
 
 /* --- Responsive ----------------------------------------------------------- */
