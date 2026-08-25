@@ -667,13 +667,13 @@ button.ghost:hover { background: var(--fill); }
   stroke-width: 1.6; stroke-linecap: round;
 }
 
+/* Positioned in viewport coordinates by the picker and attached to the body,
+   so no scrolling ancestor can clip it. */
 .datepicker {
-  position: absolute;
-  z-index: 40;
-  top: calc(100% + 5px);
-  left: 0;
+  position: fixed;
+  z-index: 60;
   width: 316px;
-  max-width: calc(100vw - 40px);
+  max-width: calc(100vw - 16px);
   background: var(--bg);
   border: 1px solid var(--border-strong);
   border-radius: var(--radius);
@@ -682,7 +682,6 @@ button.ghost:hover { background: var(--fill); }
   padding: 11px;
 }
 
-.datepicker.dp-above { top: auto; bottom: calc(100% + 5px); }
 
 .dp-head { display: flex; align-items: center; gap: 6px; margin-bottom: 9px; }
 
