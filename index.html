@@ -56,15 +56,6 @@
         </div>
 
         <div class="field">
-          <label class="label" for="observationDate">Date measured</label>
-          <div class="date-field">
-            <input type="text" id="observationDate" name="observationDate" required
-              inputmode="numeric" autocomplete="off" spellcheck="false"
-              placeholder="dd/mm/yyyy" maxlength="10">
-          </div>
-        </div>
-
-        <div class="field">
           <span class="label">Gestation at birth</span>
           <div class="gestation">
             <input type="number" id="gestationWeeks" name="gestationWeeks" min="23" max="44" step="1" value="40" aria-label="Gestation weeks">
@@ -78,29 +69,24 @@
     </section>
 
     <section class="block">
-      <h2>Measurements <span class="h2-note">enter any combination</span></h2>
-      <div class="grid grid-3">
-        <div class="field">
-          <label class="label" for="height">Height / length</label>
-          <div class="measure">
-            <input type="number" id="height" name="height" step="0.1" min="0" inputmode="decimal" placeholder="—">
-            <span class="unit">cm</span>
-          </div>
-        </div>
-        <div class="field">
-          <label class="label" for="weight">Weight</label>
-          <div class="measure">
-            <input type="number" id="weight" name="weight" step="0.001" min="0" inputmode="decimal" placeholder="—">
-            <span class="unit">kg</span>
-          </div>
-        </div>
-        <div class="field">
-          <label class="label" for="ofc">Head circumference</label>
-          <div class="measure">
-            <input type="number" id="ofc" name="ofc" step="0.1" min="0" inputmode="decimal" placeholder="—">
-            <span class="unit">cm</span>
-          </div>
-        </div>
+      <h2>Measurements <span class="h2-note">one row per date; enter any combination</span></h2>
+      <div class="table-wrap">
+        <table class="obs-table">
+          <thead>
+            <tr>
+              <th scope="col">Date measured</th>
+              <th scope="col" class="num">Height / length <span class="unit-inline">cm</span></th>
+              <th scope="col" class="num">Weight <span class="unit-inline">kg</span></th>
+              <th scope="col" class="num">Head circumference <span class="unit-inline">cm</span></th>
+              <th scope="col"><span class="sr-only">Remove row</span></th>
+            </tr>
+          </thead>
+          <tbody id="obsRows"></tbody>
+        </table>
+      </div>
+      <div class="actions">
+        <button type="button" id="addRow" class="ghost small">Add another date</button>
+        <span class="hint" id="rowHint">Add a row for each visit to plot a growth trajectory.</span>
       </div>
       <div class="actions">
         <button type="submit" class="primary">Calculate centiles</button>
@@ -115,20 +101,7 @@
     <section class="block">
       <h2>Results <button type="button" id="copyBtn" class="linklike">Copy for notes</button></h2>
       <p id="ageSummary" class="meta-line"></p>
-      <div class="table-wrap">
-        <table class="results-table">
-          <thead>
-            <tr>
-              <th scope="col">Measurement</th>
-              <th scope="col" class="num">Value</th>
-              <th scope="col" class="num">Centile</th>
-              <th scope="col" class="num">SDS</th>
-              <th scope="col" class="pos-col">Position on reference</th>
-            </tr>
-          </thead>
-          <tbody id="resultsBody"></tbody>
-        </table>
-      </div>
+      <div id="resultsTables"></div>
       <p id="resultsNote" class="results-note"></p>
     </section>
 

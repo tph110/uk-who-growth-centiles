@@ -10,8 +10,10 @@ Every calculation runs in the browser and **no patient data leaves the device**.
 ## What it does
 
 - Centile and SDS for height/length, weight and head circumference
+- Serial measurements: add a row per visit and the trajectory is tabulated and
+  plotted as a connected track across the centile curves
 - Correction for gestation at birth, reported alongside the uncorrected figure
-- A plotted point on the nine standard UK-WHO centile curves
+- Plotted on the nine standard UK-WHO centile curves
   (0.4 · 2 · 9 · 25 · 50 · 75 · 91 · 98 · 99.6)
 - A large date picker with month and year jumping — the native `<input type="date">`
   popup is browser chrome that CSS cannot resize, and it makes you step back a
