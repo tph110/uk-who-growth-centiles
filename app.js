@@ -17,7 +17,7 @@ const obsRows = document.getElementById('obsRows');
 const addRowBtn = document.getElementById('addRow');
 const resultsNote = document.getElementById('resultsNote');
 const chartKey = document.getElementById('chartKey');
-const chartHolder = document.getElementById('chart');
+const charts = document.getElementById('charts');
 const measureTabs = document.getElementById('measureTabs');
 const rangeTabs = document.getElementById('rangeTabs');
 const copyBtn = document.getElementById('copyBtn');
@@ -532,26 +532,57 @@ function renderTabs() {
   `).join('');
 }
 
-function drawChart() {
+/**
+ * Renders a chart for every measurement, not just the one on screen.
+ *
+ * The tabs then only toggle which is visible, which also means switching is
+ * instant. Printing shows them all: a record with one of the three charts in
+ * it is not much of a record.
+ */
+function drawCharts() {
   const calc = state.calculated;
-  const key = state.measurement;
+  charts.textContent = '';
 
-  const collect = (ageOf) => calc.observations
-    .filter((o) => o.results[key])
-    .map((o) => ({ age: ageOf(o), value: o.results[key].observation }));
+  for (const key of measurementsPresent(calc)) {
+    const figure = document.createElement('figure');
+    figure.className = 'chart-figure';
+    figure.dataset.measure = key;
+    figure.hidden = key !== state.measurement;
 
-  // The primary series is the age the results are reported at.
-  const series = [{
-    kind: 'primary',
-    label: calc.isCorrected ? 'Corrected age' : 'Chronological age',
-    points: collect((o) => (calc.isCorrected ? o.corrected : o.chronological)),
-  }];
+    const caption = document.createElement('figcaption');
+    caption.className = 'chart-caption';
+    caption.textContent = seriesLabel(key, calc);
+    figure.append(caption);
 
-  if (calc.isCorrected) {
-    series.push({
-      kind: 'secondary',
-      label: 'Chronological age (uncorrected)',
-      points: collect((o) => o.chronological),
+    const holder = document.createElement('div');
+    holder.className = 'chart-holder';
+    figure.append(holder);
+    charts.append(figure);
+
+    const collect = (ageOf) => calc.observations
+      .filter((o) => o.results[key])
+      .map((o) => ({ age: ageOf(o), value: o.results[key].observation }));
+
+    // The primary series is the age the results are reported at.
+    const series = [{
+      kind: 'primary',
+      label: calc.isCorrected ? 'Corrected age' : 'Chronological age',
+      points: collect((o) => (calc.isCorrected ? o.corrected : o.chronological)),
+    }];
+    if (calc.isCorrected) {
+      series.push({
+        kind: 'secondary',
+        label: 'Chronological age (uncorrected)',
+        points: collect((o) => o.chronological),
+      });
+    }
+
+    renderChart(holder, {
+      measurement: key,
+      sex: calc.sex,
+      rangeKey: state.rangeKey,
+      series,
+      age: calc.maxAge,
     });
   }
 
@@ -562,14 +593,13 @@ function drawChart() {
       : '',
     '<span class="key-item">Curves 0.4 · 2 · 9 · 25 · 50 · 75 · 91 · 98 · 99.6</span>',
   ].filter(Boolean).join('');
+}
 
-  renderChart(chartHolder, {
-    measurement: key,
-    sex: calc.sex,
-    rangeKey: state.rangeKey,
-    series,
-    age: calc.maxAge,
-  });
+/** Switching measurement is only a visibility change; nothing is redrawn. */
+function showSelectedChart() {
+  for (const figure of charts.children) {
+    figure.hidden = figure.dataset.measure !== state.measurement;
+  }
 }
 
 function buildNote(calc) {
@@ -627,7 +657,7 @@ form.addEventListener('submit', (event) => {
   results.hidden = false;
   renderResults(calc);
   renderTabs();
-  drawChart();
+  drawCharts();
   results.scrollIntoView({ behavior: 'smooth', block: 'start' });
 });
 
@@ -647,7 +677,7 @@ measureTabs.addEventListener('click', (event) => {
   if (!button) return;
   state.measurement = button.dataset.measure;
   renderTabs();
-  drawChart();
+  showSelectedChart();
 });
 
 rangeTabs.addEventListener('click', (event) => {
@@ -655,7 +685,7 @@ rangeTabs.addEventListener('click', (event) => {
   if (!button) return;
   state.rangeKey = button.dataset.range;
   renderTabs();
-  drawChart();
+  drawCharts();
 });
 
 /**
@@ -753,6 +783,3 @@ pdfBtn.addEventListener('click', () => {
   window.print();
 });
 
-window.addEventListener('resize', () => {
-  if (state.calculated) drawChart();
-});
